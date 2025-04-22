@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { jsPDF } from 'jspdf';
 import { Download, Plus, Currency, Check, Image, Palette } from 'lucide-react';
@@ -8,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Toggle } from '@/components/ui/toggle';
 import { invoiceThemes, InvoiceTheme } from '@/utils/invoiceThemes';
+import { Textarea } from "@/components/ui/textarea";
 
 interface LineItem {
   description: string;
@@ -308,18 +308,20 @@ const InvoiceGenerator = () => {
           <div className="space-y-4">
             <div>
               <label className="block text-gray-600 mb-2">Notes:</label>
-              <Input
+              <Textarea
                 placeholder="Notes - any relevant information not already covered"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
+                className="min-h-[100px]"
               />
             </div>
             <div>
               <label className="block text-gray-600 mb-2">Terms:</label>
-              <Input
+              <Textarea
                 placeholder="Terms and conditions - late fees, payment methods, delivery schedule"
                 value={terms}
                 onChange={(e) => setTerms(e.target.value)}
+                className="min-h-[100px]"
               />
             </div>
           </div>
