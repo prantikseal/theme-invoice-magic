@@ -1,6 +1,7 @@
+
 import React, { useState, useRef } from 'react';
 import { jsPDF } from 'jspdf';
-import { Download, Plus, Currency, Check, Image, Palette } from 'lucide-react';
+import { Download, Plus, Currency, Check, Image, Palette, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -8,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Toggle } from '@/components/ui/toggle';
 import { invoiceThemes, InvoiceTheme } from '@/utils/invoiceThemes';
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/sonner";
 
 interface LineItem {
   description: string;
@@ -36,6 +38,18 @@ const InvoiceGenerator = () => {
 
   const handleAddLineItem = () => {
     setLineItems([...lineItems, { description: '', quantity: 1, rate: 0 }]);
+  };
+
+  const handleDeleteLineItem = (index: number) => {
+    if (lineItems.length === 1) {
+      toast.error("You can't remove the last line item");
+      return;
+    }
+    
+    const newItems = [...lineItems];
+    newItems.splice(index, 1);
+    setLineItems(newItems);
+    toast.success("Line item removed");
   };
 
   const updateLineItem = (index: number, field: keyof LineItem, value: string | number) => {
@@ -265,7 +279,17 @@ const InvoiceGenerator = () => {
           
           {lineItems.map((item, index) => (
             <div key={index} className="grid grid-cols-12 gap-4 p-4 border-b">
-              <div className="col-span-6">
+              <div className="col-span-6 flex items-center gap-2">
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-7 w-7 text-gray-500 hover:text-red-500"
+                  onClick={() => handleDeleteLineItem(index)}
+                  title="Delete line item"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
                 <Input
                   value={item.description}
                   onChange={(e) => updateLineItem(index, 'description', e.target.value)}
