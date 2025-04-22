@@ -1,7 +1,12 @@
-
-import React from 'react';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import React from "react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface BillingDetailsProps {
   fromDetails: string;
@@ -64,17 +69,37 @@ const BillingDetails = ({
               <SelectItem value="USD">USD ($)</SelectItem>
               <SelectItem value="EUR">EUR (€)</SelectItem>
               <SelectItem value="GBP">GBP (£)</SelectItem>
+              <SelectItem value="JPY">JPY (¥)</SelectItem>
+              <SelectItem value="CAD">CAD (C$)</SelectItem>
+              <SelectItem value="AUD">AUD (A$)</SelectItem>
+              <SelectItem value="CHF">CHF (Fr)</SelectItem>
+              <SelectItem value="CNY">CNY (¥)</SelectItem>
+              <SelectItem value="INR">INR (₹)</SelectItem>
+              <SelectItem value="BRL">BRL (R$)</SelectItem>
+              <SelectItem value="MXN">MXN ($)</SelectItem>
+              <SelectItem value="SGD">SGD (S$)</SelectItem>
+              <SelectItem value="HKD">HKD (HK$)</SelectItem>
+              <SelectItem value="KRW">KRW (₩)</SelectItem>
+              <SelectItem value="NZD">NZD (NZ$)</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="text-gray-600">Date:</label>
-            <Input type="date" value={date} onChange={(e) => onDateChange(e.target.value)} />
+            <Input
+              type="date"
+              value={date}
+              onChange={(e) => onDateChange(e.target.value)}
+            />
           </div>
           <div>
             <label className="text-gray-600">Due Date:</label>
-            <Input type="date" value={dueDate} onChange={(e) => onDueDateChange(e.target.value)} />
+            <Input
+              type="date"
+              value={dueDate}
+              onChange={(e) => onDueDateChange(e.target.value)}
+            />
           </div>
         </div>
         <div>
@@ -87,7 +112,10 @@ const BillingDetails = ({
         </div>
         <div>
           <label className="text-gray-600">PO Number:</label>
-          <Input value={poNumber} onChange={(e) => onPoNumberChange(e.target.value)} />
+          <Input
+            value={poNumber}
+            onChange={(e) => onPoNumberChange(e.target.value)}
+          />
         </div>
       </div>
     </div>
