@@ -36,25 +36,203 @@ const InvoiceGenerator = () => {
     return lineItems.reduce((sum, item) => sum + (item.quantity * item.rate), 0);
   };
 
+  const getCurrencySymbol = (currencyCode: string) => {
+    switch (currencyCode) {
+      case 'USD': return '$';
+      case 'EUR': return '€';
+      case 'GBP': return '£';
+      case 'JPY': return '¥';
+      case 'CAD': return 'C$';
+      case 'AUD': return 'A$';
+      case 'CHF': return 'Fr';
+      case 'CNY': return '¥';
+      case 'INR': return '₹';
+      case 'BRL': return 'R$';
+      case 'MXN': return '$';
+      case 'SGD': return 'S$';
+      case 'HKD': return 'HK$';
+      case 'KRW': return '₩';
+      case 'NZD': return 'NZ$';
+      default: return '$';
+    }
+  };
+
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal();
+    const taxAmount = (subtotal * tax) / 100;
+    return subtotal + taxAmount;
+  };
+
+  const calculateBalance = () => {
+    return calculateTotal() - amountPaid;
+  };
+
   const handleExportPDF = () => {
     const doc = new jsPDF();
-    doc.text('INVOICE', 105, 15, { align: 'center' });
-    doc.text(`Invoice #: ${invoiceNumber}`, 20, 30);
-    doc.text(`Date: ${date}`, 20, 40);
-    doc.text(`From:`, 20, 55);
-    doc.text(fromDetails, 20, 65);
-    doc.text(`To:`, 20, 85);
-    doc.text(toDetails, 20, 95);
+    let yPosition = 20;
+
+    // Set theme colors (simplified for PDF)
+    const isColoredTheme = selectedTheme.name !== 'Classic' && selectedTheme.name !== 'Minimal';
     
+    // Header
+    doc.setFontSize(24);
+    doc.setFont('helvetica', 'normal');
+    if (isColoredTheme) {
+      doc.setTextColor(70, 70, 180); // Blue-ish for colored themes
+    } else {
+      doc.setTextColor(0, 0, 0);
+    }
+    doc.text('INVOICE', 105, yPosition, { align: 'center' });
+    yPosition += 15;
+
+    // Logo
     if (logo) {
       try {
-        doc.addImage(logo, 'JPEG', 20, 15, 40, 30);
+        doc.addImage(logo, 'JPEG', 20, yPosition, 40, 30);
+        yPosition += 35;
       } catch (error) {
         console.error('Error adding logo to PDF:', error);
+        yPosition += 10;
+      }
+    } else {
+      yPosition += 10;
+    }
+
+    // Invoice details
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Invoice #: ${invoiceNumber}`, 20, yPosition);
+    doc.text(`Date: ${date}`, 150, yPosition);
+    yPosition += 10;
+    doc.text(`Due Date: ${dueDate}`, 150, yPosition);
+    yPosition += 15;
+
+    // From details
+    doc.setFont('helvetica', 'bold');
+    doc.text('From:', 20, yPosition);
+    yPosition += 7;
+    doc.setFont('helvetica', 'normal');
+    const fromLines = fromDetails.split('\n');
+    fromLines.forEach(line => {
+      doc.text(line, 20, yPosition);
+      yPosition += 5;
+    });
+    yPosition += 10;
+
+    // To details
+    doc.setFont('helvetica', 'bold');
+    doc.text('Bill To:', 20, yPosition);
+    yPosition += 7;
+    doc.setFont('helvetica', 'normal');
+    const toLines = toDetails.split('\n');
+    toLines.forEach(line => {
+      doc.text(line, 20, yPosition);
+      yPosition += 5;
+    });
+    yPosition += 15;
+
+    // Payment terms and PO number
+    if (paymentTerms) {
+      doc.text(`Payment Terms: ${paymentTerms}`, 150, yPosition);
+      yPosition += 7;
+    }
+    if (poNumber) {
+      doc.text(`PO Number: ${poNumber}`, 150, yPosition);
+      yPosition += 7;
+    }
+    yPosition += 10;
+
+    // Line items header
+    if (isColoredTheme) {
+      doc.setFillColor(240, 240, 250); // Light background for colored themes
+    } else {
+      doc.setFillColor(245, 245, 245); // Light gray for classic themes
+    }
+    doc.rect(20, yPosition - 5, 170, 10, 'F');
+    
+    doc.setFont('helvetica', 'bold');
+    doc.text('Description', 25, yPosition);
+    doc.text('Qty', 120, yPosition);
+    doc.text('Rate', 140, yPosition);
+    doc.text('Amount', 170, yPosition);
+    yPosition += 10;
+
+    // Line items
+    doc.setFont('helvetica', 'normal');
+    lineItems.forEach(item => {
+      const amount = item.quantity * item.rate;
+      doc.text(item.description, 25, yPosition);
+      doc.text(item.quantity.toString(), 120, yPosition);
+      doc.text(`${getCurrencySymbol(currency)}${item.rate.toFixed(2)}`, 140, yPosition);
+      doc.text(`${getCurrencySymbol(currency)}${amount.toFixed(2)}`, 170, yPosition);
+      yPosition += 7;
+    });
+    
+    yPosition += 10;
+
+    // Totals
+    const subtotal = calculateSubtotal();
+    const taxAmount = (subtotal * tax) / 100;
+    const total = calculateTotal();
+    const balance = calculateBalance();
+
+    doc.text('Subtotal:', 140, yPosition);
+    doc.text(`${getCurrencySymbol(currency)}${subtotal.toFixed(2)}`, 170, yPosition);
+    yPosition += 7;
+
+    if (tax > 0) {
+      doc.text(`Tax (${tax}%):`, 140, yPosition);
+      doc.text(`${getCurrencySymbol(currency)}${taxAmount.toFixed(2)}`, 170, yPosition);
+      yPosition += 7;
+    }
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('Total:', 140, yPosition);
+    doc.text(`${getCurrencySymbol(currency)}${total.toFixed(2)}`, 170, yPosition);
+    yPosition += 7;
+
+    if (amountPaid > 0) {
+      doc.setFont('helvetica', 'normal');
+      doc.text('Amount Paid:', 140, yPosition);
+      doc.text(`${getCurrencySymbol(currency)}${amountPaid.toFixed(2)}`, 170, yPosition);
+      yPosition += 7;
+
+      doc.setFont('helvetica', 'bold');
+      doc.text('Balance Due:', 140, yPosition);
+      doc.text(`${getCurrencySymbol(currency)}${balance.toFixed(2)}`, 170, yPosition);
+      yPosition += 10;
+    }
+
+    // Notes and terms
+    if (notes || terms) {
+      yPosition += 10;
+      if (notes) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('Notes:', 20, yPosition);
+        yPosition += 7;
+        doc.setFont('helvetica', 'normal');
+        const notesLines = notes.split('\n');
+        notesLines.forEach(line => {
+          doc.text(line, 20, yPosition);
+          yPosition += 5;
+        });
+        yPosition += 5;
+      }
+
+      if (terms) {
+        doc.setFont('helvetica', 'bold');
+        doc.text('Terms:', 20, yPosition);
+        yPosition += 7;
+        doc.setFont('helvetica', 'normal');
+        const termsLines = terms.split('\n');
+        termsLines.forEach(line => {
+          doc.text(line, 20, yPosition);
+          yPosition += 5;
+        });
       }
     }
     
-    doc.save('invoice.pdf');
+    doc.save(`invoice-${invoiceNumber}.pdf`);
   };
 
   return (
